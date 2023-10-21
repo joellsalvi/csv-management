@@ -1,0 +1,235 @@
+openapi: 3.0.0
+servers:
+  - url: http://{address}:{port}{basePath}
+    variables:
+      address:
+        default: localhost
+      port:
+        default: '8080'
+      basePath:
+        default: "/"
+  - url: https://{address}:{port}{basePath}
+    variables:
+      address:
+        default: localhost
+      port:
+        default: '8080'
+      basePath:
+        default: "/"
+info:
+  title: CSV Management CRUD API
+  description: |-
+    API to execute CSV management operations
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Joel Salvi
+    url: https://www.linkedin.com/in/joel-salvi/
+    email: joellsalvi@gmail.com
+  license:
+    name: "©️ 2023 Joel Salvi All rights reserved"
+  version: 0.0.1
+tags:
+  - name: FileServiceCatalog
+    description: Everything about your File Services.
+
+paths:
+  /catalog:
+    get:
+      tags:
+        - FileServiceCatalog
+      summary: Get all file content
+      description:  |-
+        Returns all file content
+      operationId: getAllFileContent
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileContentRow'
+        '204':
+          $ref: "#/components/responses/NoContent"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - FileServiceCatalog
+      summary: Create a new row in the File
+      description:  |-
+        Add new row in the File
+      operationId: addRow
+      requestBody:
+        $ref: '#/components/requestBodies/FileContentRowRequest'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: integer
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        default:
+          $ref: "#/components/responses/DefaultError"
+  /catalog/{row-id}:
+    get:
+      tags:
+        - FileServiceCatalog
+      summary: Get a row from file content
+      description: |-
+        Returns a row from file content
+      operationId: getFileContentById
+      parameters:
+        - name: row-id
+          in: path
+          required: true
+          description: the row identifier
+          schema:
+            type: string
+            example: "10"
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileContentRow'
+        '404':
+          $ref: "#/components/responses/NotFound"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - FileServiceCatalog
+      summary: Update an existent row in the file
+      description: |-
+        Returns a row from file content
+      operationId: updateRow
+      parameters:
+        - name: row-id
+          in: path
+          required: true
+          description: the row identifier
+          schema:
+            type: string
+            example: "10"
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - FileServiceCatalog
+      summary: Delete an existent row in the file
+      description: |-
+        Delete a row from file content
+      operationId: deleteRow
+      parameters:
+        - name: row-id
+          in: path
+          required: true
+          description: the row identifier
+          schema:
+            type: string
+            example: "10"
+      responses:
+        '200':
+          description: successful operation
+        '404':
+          $ref: "#/components/responses/NotFound"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  requestBodies:
+    FileContentRowRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FileContentRowRequest'
+      description: File Content update request object
+      required: true
+  responses:
+    BadRequest:
+      description: Bad request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NoContent:
+      description: The server successfully processed the request, and is not returning any content.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    DefaultError:
+      description: Unexpected Error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    FileContentRowRequest:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+          description: CSV File Row comma-separated value
+          example: 'name;description;customValue;...'
+    FileContentRow:
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: integer
+          description: The Row Identifier
+        value:
+          type: string
+          description: CSV File Row comma-separated value
+          example: 'name;description;customValue;...'
+    Error:
+      type: object
+      required:
+        - errorCode
+        - message
+      properties:
+        errorCode:
+          type: integer
+          format: int32
+          description: the Error code
+        message:
+          type: string
+          description: The error description
